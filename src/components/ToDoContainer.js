@@ -6,24 +6,23 @@ import { v4 as uuidv4 } from "uuid";
 
 class TodoContainer extends React.Component {
   state = {
-    todos: [
-      {
-        id: uuidv4(),
-        title: "Setup development environment",
-        completed: true
-      },
-      {
-        id: uuidv4(),
-        title: "Develop website and add content",
-        completed: false
-      },
-      {
-        id: uuidv4(),
-        title: "Deploy to live server",
-        completed: false
-      }
-    ]
+    todos: [],
   };
+  componentDidMount() {
+    const temp = localStorage.getItem("todos")
+    const loadedTodos = JSON.parse(temp)
+    if (loadedTodos) {
+      this.setState({
+        todos: loadedTodos
+      })
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if(prevState.todos !== this.state.todos) {
+      const temp = JSON.stringify(this.state.todos)
+      localStorage.setItem("todos", temp)
+    }
+  }
   addTodoItem = title => {
     const newTodo = {
       id: uuidv4(),
@@ -56,13 +55,25 @@ class TodoContainer extends React.Component {
       }),
     }))
   };
+  setUpdate = (updatedTitle, id) => {
+    this.setState({
+      todos: this.state.todos.map(todo => {
+        if (todo.id === id) {
+          todo.title = updatedTitle
+        }
+        return todo
+      }),
+    })
+  }
   render() {
     return (
       <div className="container">
         <div className="inner">
           <InputToDo addTodoProps={this.addTodoItem} />
           <Header />
-          <TodosList todos={this.state.todos} handleChangeProps={this.handleChange} delTodoProps={this.delTodo} />
+          <TodosList todos={this.state.todos} handleChangeProps={this.handleChange} delTodoProps={this.delTodo}
+          setUpdate={this.setUpdate}
+          />
         </div>
       </div>
     )
